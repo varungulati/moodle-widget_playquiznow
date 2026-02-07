@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data.
+ * English strings for ltisource_playquiznow.
  *
  * @package     ltisource_playquiznow
  * @copyright   2025 PlayQuizNow
@@ -24,8 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025021401;
-$plugin->requires  = 2022112800; // Moodle 4.1+.
-$plugin->component = 'ltisource_playquiznow';
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '1.0.0';
+$string['pluginname'] = 'PlayQuizNow';
+$string['plugindescription'] = 'PlayQuizNow LTI Provider — embed interactive quizzes from PlayQuizNow into Moodle courses.';
+$string['lti_url'] = 'PlayQuizNow LTI Launch URL';
+$string['lti_url_desc'] = 'The URL endpoint for PlayQuizNow LTI launches (e.g. https://playquiznow.com/lti/launch).';
+$string['playquiznow_url_not_configured'] = 'PlayQuizNow LTI URL is not configured. Please contact your system administrator.';
+$string['privacy:metadata'] = 'The PlayQuizNow LTI source plugin does not store personal data. User data is passed to PlayQuizNow via the LTI launch.';

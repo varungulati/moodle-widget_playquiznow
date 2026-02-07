@@ -1,3 +1,9 @@
-*.zip
+/vendor/
 .DS_Store
-node_modules/
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.log
+*.zip

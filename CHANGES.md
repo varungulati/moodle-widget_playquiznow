@@ -1,13 +1,11 @@
 # Changelog
 
-## 1.0.0 — 2026-02-07
+## 1.0.0 — 2025-02-14
 
 Initial release.
 
-- Activity module: teachers add PlayQuizNow quizzes as course activities
-- Iframe embed with auto-resize via postMessage
-- Gradebook integration: scores submitted automatically on quiz completion
-- Admin settings: base URL, default dimensions, branding toggle
-- Light and dark theme support
-- Capabilities: addinstance, view, submit
+- LTI source provider integration for Moodle
+- LTI launch handling with user provisioning
+- Admin settings for LTI launch URL
+- Grade passback support via LTI Advantage
 - Moodle 4.1+ compatible
