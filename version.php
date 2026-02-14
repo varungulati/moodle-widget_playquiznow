@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025021401;
+$plugin->version   = 2026021401;
 $plugin->requires  = 2022112800; // Moodle 4.1+.
 $plugin->component = 'ltisource_playquiznow';
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '1.0.0';
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->release   = '1.1.0';
