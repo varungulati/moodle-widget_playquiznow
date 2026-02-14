@@ -24,9 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'PlayQuizNow';
-$string['plugindescription'] = 'PlayQuizNow LTI Provider — embed interactive quizzes from PlayQuizNow into Moodle courses.';
 $string['lti_url'] = 'PlayQuizNow LTI Launch URL';
+$string['plugindescription'] = 'PlayQuizNow LTI Provider — embed interactive quizzes from PlayQuizNow into Moodle courses.';
+$string['pluginname'] = 'PlayQuizNow';
 $string['lti_url_desc'] = 'The URL endpoint for PlayQuizNow LTI launches (e.g. https://playquiznow.com/lti/launch).';
 $string['playquiznow_url_not_configured'] = 'PlayQuizNow LTI URL is not configured. Please contact your system administrator.';
 $string['privacy:metadata'] = 'The PlayQuizNow LTI source plugin does not store personal data. User data is passed to PlayQuizNow via the LTI launch.';
