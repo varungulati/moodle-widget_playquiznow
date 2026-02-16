@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.2 — 2026-02-16
+
+- Fixed "Select content" (deep linking) button not appearing in External Tool form
+- Switched from manual DB inserts to Moodle's `lti_add_type()` for tool type creation, which properly strips `lti_` prefix from config keys, generates `servicesalt`, and matches dynamic registration behavior
+- Added upgrade step to fix config keys on existing installs (strips erroneous `lti_` prefix)
+- Updated install.php and upgrade.php for consistent tool type creation
+
 ## 2.0.1 — 2026-02-16
 
 - Fixed dynamic registration "Close Window" button not working in iframe (use LTI postMessage instead of window.close)
