@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.3 — 2026-02-16
+
+- Fixed tool type created with PENDING state when auto-registration fails (e.g. localhost/private Moodle)
+- Moodle only shows CONFIGURED tools in the activity chooser, so PENDING tools were invisible and the "Select content" button never appeared
+- Tool type is now always created as CONFIGURED regardless of auto-registration outcome
+- Added upgrade step to change existing PENDING PlayQuizNow tools to CONFIGURED
+
 ## 2.0.2 — 2026-02-16
 
 - Fixed "Select content" (deep linking) button not appearing in External Tool form

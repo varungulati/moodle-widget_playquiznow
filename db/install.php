@@ -86,7 +86,7 @@ function xmldb_ltisource_playquiznow_install() {
     // servicesalt, and populates lti_types fields — matching what
     // dynamic registration does.
     $type = new stdClass();
-    $type->state = $registered ? LTI_TOOL_STATE_CONFIGURED : LTI_TOOL_STATE_PENDING;
+    $type->state = LTI_TOOL_STATE_CONFIGURED;
     $type->course = SITEID;
 
     $config = new stdClass();

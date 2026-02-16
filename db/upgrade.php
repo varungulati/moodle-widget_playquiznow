@@ -72,7 +72,7 @@ function xmldb_ltisource_playquiznow_upgrade($oldversion) {
             }
 
             $type = new stdClass();
-            $type->state = $registered ? LTI_TOOL_STATE_CONFIGURED : LTI_TOOL_STATE_PENDING;
+            $type->state = LTI_TOOL_STATE_CONFIGURED;
             $type->course = SITEID;
 
             $config = new stdClass();
@@ -119,6 +119,20 @@ function xmldb_ltisource_playquiznow_upgrade($oldversion) {
         }
 
         upgrade_plugin_savepoint(true, 2026021601, 'ltisource', 'playquiznow');
+    }
+
+    if ($oldversion < 2026021603) {
+        // v2.0.3: Fix tool state — previous versions set PENDING when auto-registration
+        // failed, but Moodle only shows tools with state=CONFIGURED in the activity
+        // chooser and mod_form. Change any PENDING PlayQuizNow tool to CONFIGURED.
+        require_once($CFG->dirroot . '/mod/lti/locallib.php');
+
+        $tool = $DB->get_record('lti_types', ['tooldomain' => 'api.playquiznow.com']);
+        if ($tool && (int)$tool->state === LTI_TOOL_STATE_PENDING) {
+            $DB->set_field('lti_types', 'state', LTI_TOOL_STATE_CONFIGURED, ['id' => $tool->id]);
+        }
+
+        upgrade_plugin_savepoint(true, 2026021603, 'ltisource', 'playquiznow');
     }
 
     return true;
