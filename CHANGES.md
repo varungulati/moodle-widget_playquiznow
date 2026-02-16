@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1 — 2026-02-16
+
+- Fixed dynamic registration "Close Window" button not working in iframe (use LTI postMessage instead of window.close)
+- Fixed re-registration creating duplicate platform records causing "Multiple platforms" error on launch
+- Improved platform lookup to use most recent registration when duplicates exist
+
 ## 2.0.0 — 2026-02-16
 
 **Breaking:** Upgraded from simple redirect to full LTI 1.3 integration.
