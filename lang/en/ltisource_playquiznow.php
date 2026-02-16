@@ -24,9 +24,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['lti_url'] = 'PlayQuizNow LTI Launch URL';
-$string['plugindescription'] = 'PlayQuizNow LTI Provider — embed interactive quizzes from PlayQuizNow into Moodle courses.';
+$string['api_url'] = 'PlayQuizNow API URL';
+$string['api_url_desc'] = 'Base URL of the PlayQuizNow API. Only change this if you are running a self-hosted instance.';
+$string['dynamic_reg_url'] = 'Dynamic Registration URL';
+$string['dynamic_reg_url_desc'] = 'To complete setup, go to <strong>Site administration &gt; Plugins &gt; Activity modules &gt; External tool &gt; Manage tools</strong> and paste this URL in the <em>Tool URL</em> field:<br><br><code>https://api.playquiznow.com/lti/registration/</code><br><br>Click <strong>Add LTI Advantage</strong> and follow the prompts. This registers PlayQuizNow with your Moodle site using LTI 1.3 Dynamic Registration.';
+$string['plugindescription'] = 'PlayQuizNow LTI Provider — embed interactive quizzes from PlayQuizNow into Moodle courses with automatic grading.';
 $string['pluginname'] = 'PlayQuizNow';
-$string['lti_url_desc'] = 'The URL endpoint for PlayQuizNow LTI launches (e.g. https://playquiznow.com/lti/launch).';
-$string['playquiznow_url_not_configured'] = 'PlayQuizNow LTI URL is not configured. Please contact your system administrator.';
-$string['privacy:metadata'] = 'The PlayQuizNow LTI source plugin does not store personal data. User data is passed to PlayQuizNow via the LTI launch.';
+$string['privacy:metadata'] = 'The PlayQuizNow LTI source plugin does not store personal data. User data is passed to PlayQuizNow via the standard LTI launch.';
+$string['setup_desc'] = 'This plugin pre-configures PlayQuizNow as an External Tool with LTI 1.3. To complete the connection, run Dynamic Registration using the URL below.';
+$string['setup_heading'] = 'Setup';

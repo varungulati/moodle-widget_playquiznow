@@ -17,6 +17,12 @@
 /**
  * PlayQuizNow LTI Source Provider library.
  *
+ * This plugin auto-configures PlayQuizNow as a preconfigured External Tool
+ * in Moodle with LTI 1.3 support, deep linking, and grade passback.
+ *
+ * The actual LTI 1.3 launch flow is handled by Moodle's core mod_lti module.
+ * This plugin provides the tool type configuration and admin settings.
+ *
  * @package     ltisource_playquiznow
  * @copyright   2025 PlayQuizNow
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,40 +43,12 @@ function ltisource_playquiznow_get_config() {
  * @return array Provider name, description, and launch URL.
  */
 function ltisource_playquiznow_get_provider_info() {
+    $config = ltisource_playquiznow_get_config();
+    $baseurl = !empty($config->api_url) ? $config->api_url : 'https://api.playquiznow.com';
+
     return [
         'name'        => get_string('pluginname', 'ltisource_playquiznow'),
         'description' => get_string('plugindescription', 'ltisource_playquiznow'),
-        'url'         => get_config('ltisource_playquiznow', 'lti_url'),
+        'url'         => $baseurl . '/lti/launch/',
     ];
-}
-
-/**
- * Handle the LTI launch request.
- *
- * Prepares launch parameters from the current Moodle session
- * and redirects to the PlayQuizNow LTI endpoint.
- *
- * @return void
- */
-function ltisource_playquiznow_handle_launch() {
-    global $USER, $COURSE;
-
-    $config = ltisource_playquiznow_get_config();
-    $ltiurl = !empty($config->lti_url) ? $config->lti_url : '';
-
-    if (empty($ltiurl)) {
-        throw new moodle_exception('playquiznow_url_not_configured', 'ltisource_playquiznow');
-    }
-
-    $launchparams = [
-        'user_id'                => $USER->id,
-        'user_email'             => $USER->email,
-        'user_name'              => fullname($USER),
-        'course_id'              => $COURSE->id,
-        'course_name'            => $COURSE->fullname,
-        'custom_param_timestamp' => time(),
-    ];
-
-    $launchurl = $ltiurl . '?' . http_build_query($launchparams);
-    redirect($launchurl);
 }

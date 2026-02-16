@@ -30,11 +30,26 @@ if ($hassiteconfig) {
         new lang_string('pluginname', 'ltisource_playquiznow')
     );
 
+    // Setup instructions.
+    $settings->add(new admin_setting_heading(
+        'ltisource_playquiznow/setup_heading',
+        new lang_string('setup_heading', 'ltisource_playquiznow'),
+        new lang_string('setup_desc', 'ltisource_playquiznow')
+    ));
+
+    // Dynamic Registration URL (read-only info for admin).
+    $settings->add(new admin_setting_heading(
+        'ltisource_playquiznow/dynamic_reg_heading',
+        new lang_string('dynamic_reg_url', 'ltisource_playquiznow'),
+        new lang_string('dynamic_reg_url_desc', 'ltisource_playquiznow')
+    ));
+
+    // PlayQuizNow API base URL (for custom/self-hosted deployments).
     $settings->add(new admin_setting_configtext(
-        'ltisource_playquiznow/lti_url',
-        new lang_string('lti_url', 'ltisource_playquiznow'),
-        new lang_string('lti_url_desc', 'ltisource_playquiznow'),
-        'https://playquiznow.com/lti/launch',
+        'ltisource_playquiznow/api_url',
+        new lang_string('api_url', 'ltisource_playquiznow'),
+        new lang_string('api_url_desc', 'ltisource_playquiznow'),
+        'https://api.playquiznow.com',
         PARAM_URL
     ));
 

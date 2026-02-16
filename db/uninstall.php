@@ -15,7 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data.
+ * Uninstall hook for ltisource_playquiznow.
+ *
+ * Cleans up the preconfigured tool type created on install.
+ * Does NOT remove tool types created via Dynamic Registration
+ * (those have a client_id set).
  *
  * @package     ltisource_playquiznow
  * @copyright   2025 PlayQuizNow
@@ -24,8 +28,24 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2026021600;
-$plugin->requires  = 2022112800; // Moodle 4.1+.
-$plugin->component = 'ltisource_playquiznow';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2.0.0';
+/**
+ * Run uninstall tasks for ltisource_playquiznow.
+ *
+ * @return bool
+ */
+function xmldb_ltisource_playquiznow_uninstall() {
+    global $DB;
+
+    // Only remove plugin-created tool types (no client_id = not from Dynamic Registration).
+    $types = $DB->get_records_select('lti_types',
+        "tooldomain = :domain AND (clientid IS NULL OR clientid = '')",
+        ['domain' => 'api.playquiznow.com']
+    );
+
+    foreach ($types as $type) {
+        $DB->delete_records('lti_types_config', ['typeid' => $type->id]);
+        $DB->delete_records('lti_types', ['id' => $type->id]);
+    }
+
+    return true;
+}
