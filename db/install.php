@@ -17,9 +17,9 @@
 /**
  * Post-install hook for ltisource_playquiznow.
  *
- * Creates a preconfigured External Tool type for PlayQuizNow
- * with all LTI 1.3 URLs pre-filled. The admin completes setup
- * via Dynamic Registration to establish the two-way trust.
+ * Creates a preconfigured External Tool type for PlayQuizNow with LTI 1.3
+ * and auto-registers with the PlayQuizNow backend so deep linking and
+ * launches work immediately.
  *
  * @package     ltisource_playquiznow
  * @copyright   2025 PlayQuizNow
@@ -42,16 +42,55 @@ function xmldb_ltisource_playquiznow_install() {
     }
 
     require_once($CFG->dirroot . '/mod/lti/locallib.php');
+    require_once($CFG->libdir . '/filelib.php');
 
-    // Create preconfigured tool type with all PlayQuizNow LTI 1.3 URLs.
+    $apiurl = 'https://api.playquiznow.com';
+
+    // Generate a unique client ID for this Moodle <-> PlayQuizNow connection.
+    $clientid = random_string(15);
+
+    // Moodle's standard LTI endpoints.
+    $issuer = $CFG->wwwroot;
+    $authloginurl = $CFG->wwwroot . '/mod/lti/auth.php';
+    $authtokenurl = $CFG->wwwroot . '/mod/lti/token.php';
+    $keyseturl = $CFG->wwwroot . '/mod/lti/certs.php';
+
+    // Auto-register with PlayQuizNow's backend so LTI 1.3 works immediately.
+    $registered = false;
+    try {
+        $curl = new \curl();
+        $curl->setHeader(['Content-Type: application/json']);
+        $response = $curl->post($apiurl . '/lti/auto-register/', json_encode([
+            'issuer' => $issuer,
+            'client_id' => $clientid,
+            'auth_login_url' => $authloginurl,
+            'auth_token_url' => $authtokenurl,
+            'key_set_url' => $keyseturl,
+        ]));
+
+        if ($curl->get_errno() === 0) {
+            $result = json_decode($response, true);
+            if (!empty($result['success'])) {
+                $registered = true;
+            }
+        }
+    } catch (\Exception $e) {
+        // Auto-registration failed (e.g. site not publicly accessible).
+        // The tool type will be created as pending — admin can complete
+        // setup via Dynamic Registration later.
+        debugging('PlayQuizNow auto-registration failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
+    }
+
+    // Create preconfigured tool type.
     $type = new stdClass();
     $type->name = 'PlayQuizNow';
-    $type->baseurl = 'https://api.playquiznow.com/lti/launch/';
+    $type->baseurl = $apiurl . '/lti/launch/';
     $type->tooldomain = 'api.playquiznow.com';
-    $type->state = LTI_TOOL_STATE_PENDING;
+    $type->state = $registered ? LTI_TOOL_STATE_CONFIGURED : LTI_TOOL_STATE_PENDING;
     $type->course = SITEID;
     $type->coursevisible = LTI_COURSEVISIBLE_ACTIVITYCHOOSER;
     $type->ltiversion = LTI_VERSION_1P3;
+    $type->clientid = $clientid;
     $type->description = get_string('plugindescription', 'ltisource_playquiznow');
     $type->timecreated = time();
     $type->timemodified = time();
@@ -59,15 +98,15 @@ function xmldb_ltisource_playquiznow_install() {
 
     $typeid = $DB->insert_record('lti_types', $type);
 
-    // Pre-fill LTI 1.3 configuration so the admin doesn't have to enter URLs manually.
+    // Pre-fill LTI 1.3 configuration.
     $configs = [
-        'lti_toolurl'                            => 'https://api.playquiznow.com/lti/launch/',
-        'lti_publickeyset'                       => 'https://api.playquiznow.com/lti/jwks/',
+        'lti_toolurl'                            => $apiurl . '/lti/launch/',
+        'lti_publickeyset'                       => $apiurl . '/lti/jwks/',
         'lti_keytype'                            => 'JWK_KEYSET',
-        'lti_initiatelogin'                      => 'https://api.playquiznow.com/lti/login/',
-        'lti_redirectionuris'                    => 'https://api.playquiznow.com/lti/launch/',
+        'lti_initiatelogin'                      => $apiurl . '/lti/login/',
+        'lti_redirectionuris'                    => $apiurl . '/lti/launch/',
         'lti_contentitem'                        => 1,
-        'lti_toolurl_ContentItemSelectionRequest' => 'https://api.playquiznow.com/lti/launch/',
+        'lti_toolurl_ContentItemSelectionRequest' => $apiurl . '/lti/launch/',
         'sendname'                               => LTI_SETTING_ALWAYS,
         'sendemailaddr'                          => LTI_SETTING_ALWAYS,
         'acceptgrades'                           => LTI_SETTING_ALWAYS,

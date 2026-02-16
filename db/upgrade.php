@@ -34,18 +34,52 @@ function xmldb_ltisource_playquiznow_upgrade($oldversion) {
     global $CFG, $DB;
 
     if ($oldversion < 2026021600) {
-        // v2.0.0: Create preconfigured tool type if it doesn't already exist.
+        // v2.0.0: Create preconfigured tool type with auto-registration.
         if (!$DB->record_exists('lti_types', ['tooldomain' => 'api.playquiznow.com'])) {
             require_once($CFG->dirroot . '/mod/lti/locallib.php');
+            require_once($CFG->libdir . '/filelib.php');
+
+            $apiurl = 'https://api.playquiznow.com';
+            $clientid = random_string(15);
+
+            // Moodle's standard LTI endpoints.
+            $issuer = $CFG->wwwroot;
+            $authloginurl = $CFG->wwwroot . '/mod/lti/auth.php';
+            $authtokenurl = $CFG->wwwroot . '/mod/lti/token.php';
+            $keyseturl = $CFG->wwwroot . '/mod/lti/certs.php';
+
+            // Auto-register with PlayQuizNow's backend.
+            $registered = false;
+            try {
+                $curl = new \curl();
+                $curl->setHeader(['Content-Type: application/json']);
+                $response = $curl->post($apiurl . '/lti/auto-register/', json_encode([
+                    'issuer' => $issuer,
+                    'client_id' => $clientid,
+                    'auth_login_url' => $authloginurl,
+                    'auth_token_url' => $authtokenurl,
+                    'key_set_url' => $keyseturl,
+                ]));
+
+                if ($curl->get_errno() === 0) {
+                    $result = json_decode($response, true);
+                    if (!empty($result['success'])) {
+                        $registered = true;
+                    }
+                }
+            } catch (\Exception $e) {
+                debugging('PlayQuizNow auto-registration failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            }
 
             $type = new stdClass();
             $type->name = 'PlayQuizNow';
-            $type->baseurl = 'https://api.playquiznow.com/lti/launch/';
+            $type->baseurl = $apiurl . '/lti/launch/';
             $type->tooldomain = 'api.playquiznow.com';
-            $type->state = LTI_TOOL_STATE_PENDING;
+            $type->state = $registered ? LTI_TOOL_STATE_CONFIGURED : LTI_TOOL_STATE_PENDING;
             $type->course = SITEID;
             $type->coursevisible = LTI_COURSEVISIBLE_ACTIVITYCHOOSER;
             $type->ltiversion = LTI_VERSION_1P3;
+            $type->clientid = $clientid;
             $type->description = get_string('plugindescription', 'ltisource_playquiznow');
             $type->timecreated = time();
             $type->timemodified = time();
@@ -54,13 +88,13 @@ function xmldb_ltisource_playquiznow_upgrade($oldversion) {
             $typeid = $DB->insert_record('lti_types', $type);
 
             $configs = [
-                'lti_toolurl'                            => 'https://api.playquiznow.com/lti/launch/',
-                'lti_publickeyset'                       => 'https://api.playquiznow.com/lti/jwks/',
+                'lti_toolurl'                            => $apiurl . '/lti/launch/',
+                'lti_publickeyset'                       => $apiurl . '/lti/jwks/',
                 'lti_keytype'                            => 'JWK_KEYSET',
-                'lti_initiatelogin'                      => 'https://api.playquiznow.com/lti/login/',
-                'lti_redirectionuris'                    => 'https://api.playquiznow.com/lti/launch/',
+                'lti_initiatelogin'                      => $apiurl . '/lti/login/',
+                'lti_redirectionuris'                    => $apiurl . '/lti/launch/',
                 'lti_contentitem'                        => 1,
-                'lti_toolurl_ContentItemSelectionRequest' => 'https://api.playquiznow.com/lti/launch/',
+                'lti_toolurl_ContentItemSelectionRequest' => $apiurl . '/lti/launch/',
                 'sendname'                               => LTI_SETTING_ALWAYS,
                 'sendemailaddr'                          => LTI_SETTING_ALWAYS,
                 'acceptgrades'                           => LTI_SETTING_ALWAYS,
