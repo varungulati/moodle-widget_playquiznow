@@ -81,45 +81,34 @@ function xmldb_ltisource_playquiznow_install() {
         debugging('PlayQuizNow auto-registration failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
     }
 
-    // Create preconfigured tool type.
+    // Create preconfigured tool type using Moodle's lti_add_type().
+    // This properly strips the lti_ prefix from config keys, generates
+    // servicesalt, and populates lti_types fields — matching what
+    // dynamic registration does.
     $type = new stdClass();
-    $type->name = 'PlayQuizNow';
-    $type->baseurl = $apiurl . '/lti/launch/';
-    $type->tooldomain = 'api.playquiznow.com';
     $type->state = $registered ? LTI_TOOL_STATE_CONFIGURED : LTI_TOOL_STATE_PENDING;
     $type->course = SITEID;
-    $type->coursevisible = LTI_COURSEVISIBLE_ACTIVITYCHOOSER;
-    $type->ltiversion = LTI_VERSION_1P3;
-    $type->clientid = $clientid;
-    $type->description = get_string('plugindescription', 'ltisource_playquiznow');
-    $type->timecreated = time();
-    $type->timemodified = time();
-    $type->createdby = get_admin()->id;
 
-    $typeid = $DB->insert_record('lti_types', $type);
+    $config = new stdClass();
+    $config->lti_typename = 'PlayQuizNow';
+    $config->lti_toolurl = $apiurl . '/lti/launch/';
+    $config->lti_tooldomain = 'api.playquiznow.com';
+    $config->lti_description = get_string('plugindescription', 'ltisource_playquiznow');
+    $config->lti_ltiversion = LTI_VERSION_1P3;
+    $config->lti_clientid = $clientid;
+    $config->lti_coursevisible = LTI_COURSEVISIBLE_ACTIVITYCHOOSER;
+    $config->lti_publickeyset = $apiurl . '/lti/jwks/';
+    $config->lti_keytype = 'JWK_KEYSET';
+    $config->lti_initiatelogin = $apiurl . '/lti/login/';
+    $config->lti_redirectionuris = $apiurl . '/lti/launch/';
+    $config->lti_contentitem = 1;
+    $config->lti_toolurl_ContentItemSelectionRequest = $apiurl . '/lti/launch/';
+    $config->lti_sendname = LTI_SETTING_ALWAYS;
+    $config->lti_sendemailaddr = LTI_SETTING_ALWAYS;
+    $config->lti_acceptgrades = LTI_SETTING_ALWAYS;
+    $config->lti_launchcontainer = LTI_LAUNCH_CONTAINER_EMBED_NO_BLOCKS;
 
-    // Pre-fill LTI 1.3 configuration.
-    $configs = [
-        'lti_toolurl'                            => $apiurl . '/lti/launch/',
-        'lti_publickeyset'                       => $apiurl . '/lti/jwks/',
-        'lti_keytype'                            => 'JWK_KEYSET',
-        'lti_initiatelogin'                      => $apiurl . '/lti/login/',
-        'lti_redirectionuris'                    => $apiurl . '/lti/launch/',
-        'lti_contentitem'                        => 1,
-        'lti_toolurl_ContentItemSelectionRequest' => $apiurl . '/lti/launch/',
-        'sendname'                               => LTI_SETTING_ALWAYS,
-        'sendemailaddr'                          => LTI_SETTING_ALWAYS,
-        'acceptgrades'                           => LTI_SETTING_ALWAYS,
-        'launchcontainer'                        => LTI_LAUNCH_CONTAINER_EMBED_NO_BLOCKS,
-    ];
-
-    foreach ($configs as $name => $value) {
-        $record = new stdClass();
-        $record->typeid = $typeid;
-        $record->name = $name;
-        $record->value = $value;
-        $DB->insert_record('lti_types_config', $record);
-    }
+    $typeid = lti_add_type($type, $config);
 
     return true;
 }

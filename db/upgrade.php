@@ -72,45 +72,53 @@ function xmldb_ltisource_playquiznow_upgrade($oldversion) {
             }
 
             $type = new stdClass();
-            $type->name = 'PlayQuizNow';
-            $type->baseurl = $apiurl . '/lti/launch/';
-            $type->tooldomain = 'api.playquiznow.com';
             $type->state = $registered ? LTI_TOOL_STATE_CONFIGURED : LTI_TOOL_STATE_PENDING;
             $type->course = SITEID;
-            $type->coursevisible = LTI_COURSEVISIBLE_ACTIVITYCHOOSER;
-            $type->ltiversion = LTI_VERSION_1P3;
-            $type->clientid = $clientid;
-            $type->description = get_string('plugindescription', 'ltisource_playquiznow');
-            $type->timecreated = time();
-            $type->timemodified = time();
-            $type->createdby = get_admin()->id;
 
-            $typeid = $DB->insert_record('lti_types', $type);
+            $config = new stdClass();
+            $config->lti_typename = 'PlayQuizNow';
+            $config->lti_toolurl = $apiurl . '/lti/launch/';
+            $config->lti_tooldomain = 'api.playquiznow.com';
+            $config->lti_description = get_string('plugindescription', 'ltisource_playquiznow');
+            $config->lti_ltiversion = LTI_VERSION_1P3;
+            $config->lti_clientid = $clientid;
+            $config->lti_coursevisible = LTI_COURSEVISIBLE_ACTIVITYCHOOSER;
+            $config->lti_publickeyset = $apiurl . '/lti/jwks/';
+            $config->lti_keytype = 'JWK_KEYSET';
+            $config->lti_initiatelogin = $apiurl . '/lti/login/';
+            $config->lti_redirectionuris = $apiurl . '/lti/launch/';
+            $config->lti_contentitem = 1;
+            $config->lti_toolurl_ContentItemSelectionRequest = $apiurl . '/lti/launch/';
+            $config->lti_sendname = LTI_SETTING_ALWAYS;
+            $config->lti_sendemailaddr = LTI_SETTING_ALWAYS;
+            $config->lti_acceptgrades = LTI_SETTING_ALWAYS;
+            $config->lti_launchcontainer = LTI_LAUNCH_CONTAINER_EMBED_NO_BLOCKS;
 
-            $configs = [
-                'lti_toolurl'                            => $apiurl . '/lti/launch/',
-                'lti_publickeyset'                       => $apiurl . '/lti/jwks/',
-                'lti_keytype'                            => 'JWK_KEYSET',
-                'lti_initiatelogin'                      => $apiurl . '/lti/login/',
-                'lti_redirectionuris'                    => $apiurl . '/lti/launch/',
-                'lti_contentitem'                        => 1,
-                'lti_toolurl_ContentItemSelectionRequest' => $apiurl . '/lti/launch/',
-                'sendname'                               => LTI_SETTING_ALWAYS,
-                'sendemailaddr'                          => LTI_SETTING_ALWAYS,
-                'acceptgrades'                           => LTI_SETTING_ALWAYS,
-                'launchcontainer'                        => LTI_LAUNCH_CONTAINER_EMBED_NO_BLOCKS,
-            ];
-
-            foreach ($configs as $name => $value) {
-                $record = new stdClass();
-                $record->typeid = $typeid;
-                $record->name = $name;
-                $record->value = $value;
-                $DB->insert_record('lti_types_config', $record);
-            }
+            lti_add_type($type, $config);
         }
 
         upgrade_plugin_savepoint(true, 2026021600, 'ltisource', 'playquiznow');
+    }
+
+    if ($oldversion < 2026021601) {
+        // v2.0.1: Fix config keys — previous versions stored lti_types_config
+        // entries with the lti_ prefix (e.g. "lti_contentitem") but Moodle
+        // expects them without it (e.g. "contentitem"). Strip the prefix from
+        // any affected rows so deep linking / Select content button works.
+        require_once($CFG->dirroot . '/mod/lti/locallib.php');
+
+        $tool = $DB->get_record('lti_types', ['tooldomain' => 'api.playquiznow.com'], 'id');
+        if ($tool) {
+            $badconfigs = $DB->get_records('lti_types_config', ['typeid' => $tool->id]);
+            foreach ($badconfigs as $cfg) {
+                if (strpos($cfg->name, 'lti_') === 0) {
+                    $cfg->name = substr($cfg->name, 4);
+                    $DB->update_record('lti_types_config', $cfg);
+                }
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026021601, 'ltisource', 'playquiznow');
     }
 
     return true;
